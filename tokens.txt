@@ -1,0 +1,12 @@
+ //expressões regulares para encontrar os tokens
+            string originalExpression = expression;
+            string pattern_id = "[a-zA-Z_][a-zA-Z0-9]*";
+            string pattern_atrib = "=";
+            string pattern_num = @"[-]?[\d]_*\.?[\d]*E?";
+            string pattern_opDiv = "/";
+            string pattern_delim = ",";
+            string pattern_opAdd = @"\+";
+            string pattern_opSub = @"\-";
+            string pattern_opMul = @"\*";
+            string pattern_parentheses_open = @"[\(]";
+            string pattern_parentheses_close = @"[\)]";
