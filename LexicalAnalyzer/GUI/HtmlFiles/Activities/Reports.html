@@ -1,0 +1,396 @@
+<script type="text/javascript">
+	Reports = function(){};
+	
+	Reports.prototype.start = function(){
+		this._realtime = true;
+		this._status = this.html.$("#status");
+		this._investiment = this.html.$("#investiment");
+		this._cotations = this.html.$("#cotationCount");
+		this._dateTime = this.html.$("#dateTime");
+		this._log = this.html.$("#log");
+		this._profit = this.html.$("#profit");
+
+		this._valBcRaw = this.html.$("#last_bcRaw");
+		this._valBc = this.html.$("#last_bc");
+		this._valBuy = this.html.$("#last_buy");
+		this._valSell = this.html.$("#last_sell");
+
+		//loads ChartJS
+		SJL.include("Shared/Chart.bundle.min.js", function(){
+			//hide the loading
+			var _this = this;
+			var l = this.html.$(".loading")
+			l.animate(1, 0, 300, function(att) {
+				this.setProperty("style.opacity", att);
+			}, function(){
+				this.setProperty("style.display", "none");
+			});
+
+			//show the chart
+			var ctx = this.html.$(".chart").elements[0];
+			_this._chart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: [],
+					datasets: [
+					{
+						label: 'BC Buy',
+						data: [],
+						borderColor: "rgba(255, 0, 0, 1.0)",
+						fill:false
+						//borderWidth: 1
+					},
+					{
+						label: 'BC Sell',
+						data: [],
+						borderColor: "rgba(0,50,255, 1.0)",
+						fill:false
+						//borderWidth: 1
+					},
+					{
+						label: 'BC value',
+						data: [],
+						borderColor: "rgba(100, 100, 100, 1.0)",
+						fill:false
+						
+						//borderWidth: 1
+					},
+					{
+						label: 'Raw BC Value',
+						data: [],
+						borderColor: "rgba(200, 200, 200, 1.0)",
+						fill:false
+						//borderWidth: 1
+					}]
+					},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+							}
+						}]
+					}
+
+					
+				}
+			});
+
+			_this._drawSavedStatists.call(_this);
+			
+		}, this, function(progress){
+			this.html.$(".progressInfo").setValue(parseInt(progress) + "%");
+		});
+		
+		this._rawLastCount = 0;
+		this._lastCount =0;
+		this._sellCount = 0;
+		this._buyCount = 0;
+		this._step = 250;
+		
+		//start to oberve bottlesPerSecond notification from server
+		appStates.dao.observateVariables(function(varName, varValue){
+			this._newStatistcsReceived(varName, varValue);
+		}, this, "data.");
+
+		appStates.dao.observateVariables(function(varName, varValue){
+			
+			if (varName  == "OperationType"){
+				if (varValue == "Simulation"){
+					this._realtime = false;
+					this._status.setValue("Simulating");
+				}
+				else {
+					this._realtime = true;
+					this._status.setValue("Realtime");
+				}
+			}
+			else if (varName == "CotationCount")
+			{
+				this._cotations.setValue(varValue);
+			}
+			else if (varName == "MoneyApplicationStatus.Application")
+			{
+				this._investiment.setValue("Investiment: $"+parseFloat(varValue).toFixed(3));
+				this._investiment.elements[0].style.color = "red";
+				this._log.elements[0].value += "\r\n Money applied";
+			}
+			else if (varName == "MoneyApplicationStatus.NoApplication")
+			{
+				this._investiment.setValue("no appplication: $"+parseFloat(varValue).toFixed(3));
+				this._investiment.elements[0].style.color = "green";
+				this._log.elements[0].value += "\r\n Money rescued";
+			}
+			else if (varName == "data.currDateTime")
+			{
+				this._dateTime.setValue(varValue);
+			}
+			else if (varName == "MoneyApplicationStatus.CurrentProfit")
+			{
+				this._profit.setValue("$"+parseFloat(varValue).toFixed(3));
+			}
+		}, this);
+		
+		/*toUI("data.raw.buy", rawbuy);
+                toUI("data.raw.sell", rawsell);
+                toUI("data.raw.last", rawlast);
+                toUI("data.processed.buy", buy);
+                toUI("data.processed.sell", sell);
+				toUI("data.processed.last", last);*/
+				
+		this._count = 0;
+		this._pointsCount = 0;
+		this._lastDate = new Date();
+		this._recLast = false;
+		this._recLast2 = false;
+		this._recSell = false;
+		this._recBuy = false;
+	};
+
+
+	
+	Reports.prototype._newStatistcsReceived = function(name, value){
+		try{
+			//this._chart.data.labels.push(label);
+			var currDate = new Date();
+
+			var milissecs = currDate - this._lastDate;
+			if (milissecs < 250)
+				return;
+
+			//The incoming data is in "bottles per second", but the chart is in "bottles per hour", so, convert the value from seconds to hour
+			if (name == "data.raw.last")
+			{
+				if (this._recLast == false)
+				{
+					this._chart.data.labels.push(this._pointsCount);
+					this._chart.data.datasets[3].data.push(parseFloat(value));
+					this._pointsCount++;
+
+					this._valBcRaw.setValue(parseFloat(value).toFixed(3));
+
+					this._recLast = true;
+				}
+			}
+			else if (name == "data.processed.last")
+			{
+				if (this._recLast2 == false)
+				{
+					this._chart.data.datasets[2].data.push(parseFloat(value));
+					this._valBc.setValue(parseFloat(value).toFixed(3));
+					this._recLast2 = true;
+				}
+			}
+			else if (name == "data.processed.sell")
+			{
+				if (this._recSell == false)
+				{
+					this._chart.data.datasets[1].data.push(parseFloat(value));
+					this._valSell.setValue(parseFloat(value).toFixed(3));
+
+					this._recSell = true;
+				}
+			}
+			else if (name == "data.processed.buy")
+			{
+				if (this._recBuy == false)
+				{
+					this._chart.data.datasets[0].data.push(parseFloat(value));
+					this._valBuy.setValue(parseFloat(value).toFixed(3));
+					this._recBuy = true;
+				}
+			}
+			
+			//updates the chart
+
+			if (this._recLast == true && this._recLast2 == true && this._recSell == true && this._recBuy == true)
+			{
+				this._chart.update();
+				this._lastDate = currDate;
+				this._recLast = false;
+				this._recLast2 = false;
+				this._recSell = false;
+				this._recBuy = false;
+			}
+		}
+		catch(e){
+		}
+	}
+
+	Reports.prototype._drawSavedStatists = function(){
+		
+	}
+
+	Reports.prototype._clear = function(){
+		this._chart.data =  {
+					labels: [],
+					datasets: [
+					{
+						label: 'BC Buy',
+						data: [],
+						borderColor: "rgba(255, 0, 0, 1.0)",
+						fill:false
+						//borderWidth: 1
+					},
+					{
+						label: 'BC Sell',
+						data: [],
+						borderColor: "rgba(0,50,255, 1.0)",
+						fill:false
+						//borderWidth: 1
+					},
+					{
+						label: 'BC value',
+						data: [],
+						borderColor: "rgba(100, 100, 100, 1.0)",
+						fill:false
+						
+						//borderWidth: 1
+					},
+					{
+						label: 'Raw BC Value',
+						data: [],
+						borderColor: "rgba(200, 200, 200, 1.0)",
+						fill:false
+						//borderWidth: 1
+					}]
+				};
+
+		this._chart.update();
+		this._pointsCount = 0;
+		this._log.elements[0].value = "";
+
+	}
+
+	
+
+</script>
+<style type="text/css">
+    Reports {
+        /*background:black;*/
+		
+		position: absolute;
+		top:0;
+		bottom:0;
+		left:0;
+		right:0;
+    }
+
+	
+	
+	@keyframes spinner {
+	  to {transform: rotate(360deg);}
+	}
+	 
+	Reports .spinner:before {
+	  content: '';
+	  box-sizing: border-box;
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  width: 90%;
+	  height: 90%;
+	  margin-top: -45%;
+	  margin-left: -45%;
+	  border-radius: 50%;
+	  border: 10px solid #ccc;
+	  border-top-color: #000;
+	  animation: spinner .6s linear infinite;
+	}
+	
+	Reports .loading{
+		position:absolute;
+		width:100px;
+		height:100px;
+		left:50%;
+		margin-left:-50px;
+		top:50%;
+		margin-top:-50px;
+	}
+	
+	Reports .progressInfo{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		top: 40px;
+	}
+	
+	
+	Reports .chart{
+		position: absolute;
+	}
+
+	Reports .rightInfo{
+		position:absolute;
+		width:300px;
+		right:0;
+		height:100%;
+		top:0;
+		background:#d0d0d0;
+	}
+
+	Reports .canvasRender{
+
+		position: absolute;
+		top:0;
+		bottom:0;
+		left:0;
+		right:300px;
+	}
+
+	reports .rightMessage{
+		margin-left:50px;
+
+	}
+
+	
+	
+	
+</style>
+<Reports>
+	<div class="canvasRender">
+		<canvas class="chart" style="width:100%;height:100%;"></canvas>
+	</div>
+	<div class="loading">
+		<div class="spinner">
+		</div>
+		<div class="progressInfo">
+		</div>
+	</div>
+
+	<div class="rightInfo">
+		<button onclick="this.Reports._clear();">Clear</button><br/><br/>
+
+		Current profit:
+		<div class="rightMessage" id="profit">Realtime</div>
+
+		Current investiment:
+		<div class="rightMessage" id="investiment">--</div>
+
+		Current date and time:
+		<div class="rightMessage" id="dateTime">--</div>
+
+		Total of BC cotations:
+		<div class="rightMessage" id="cotationCount">--</div>
+
+		
+		<div class="rightMessage" id=""></div>
+
+		Bc current cotation:
+		<div class="rightMessage" id="cotations">
+			Raw BC value $<span id="last_bcRaw"></span><br/>
+			Processed BC value $<span id="last_bc"></span><br/>
+			BC buy $<span id="last_buy"></span><br/>
+			BC sell $<span id="last_sell"></span><br/>
+
+		</div>
+
+		Bc current cotation:
+		<div class="rightMessage" id="cotations">
+			<textarea id="log"></textarea>
+
+		</div>
+
+	</div>
+
+</Reports>

@@ -1,0 +1,165 @@
+<script type="text/javascript">
+	CircularButton = function(SJLP, Arguments){
+		var tempPrivate = {}; for (var c in this.private) tempPrivate[c] = this.private[c]; this.private = tempPrivate;
+
+		this.private.autoShowLoading = false;
+	};
+	
+	/** Creates a custom container to encapsulate private objects */
+	CircularButton.prototype.private = {};
+	
+	/** This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work */
+	CircularButton.prototype.start = function(){
+	
+	};
+	
+	/** Changes the button background
+	* @param (string) newBackground - A css string with the new 'background' value.
+	*/
+	CircularButton.prototype.setBackground= function (newBackground){
+		this.html.$("CircularButton").setCssProperty("background", newBackground);
+	};
+	
+	/** Changes the button icon
+	* @param (string) iconAddress - An 'img'.src value with address of the new icon
+	* file in the server. You can specificates an data value.
+	*/
+	CircularButton.prototype.setIcon = function(iconAddress){
+	
+		var _this = this;
+		this.html.$(".icon").elements[0].onload = function() { _this.private.adjustIcon.call(_this); }; 
+	
+		//gets the icon from html
+		var icon = this.html.$(".icon").setProperty("src", iconAddress);
+	};
+	
+	CircularButton.prototype.showLoading = function(){
+		console.log(this.html.$(".spinner").elements);
+		this.html.$(".spinner").show();
+		this.html.$(".icon").hide();
+	};
+	
+	CircularButton.prototype.hideLoading = function(){
+		this.html.$(".spinner").hide();
+		this.html.$(".icon").show();
+	};
+	
+	CircularButton.prototype.setAutoShowLoading = function(val){
+		this.private.autoShowLoading = (val == "true");
+	};
+	
+	/** adjusta the size of the icon, keeping its aspect ratio. The new size is
+	* calculated based on the current size of the button */
+	CircularButton.prototype.private.adjustIcon = function(maxSize){
+		//adjust the icon size to button (based in the bigger icon side, that can be the height or width)
+		var width = this.html.$(".icon").elements[0].offsetWidth
+		var height = this.html.$(".icon").elements[0].offsetHeight;
+		
+		if (width > height)
+		{
+			//calculates proportion (aspect ratio) of icon
+			var proportion = height/width;
+			
+			//calculates the max size of icon (relative to current button size). the value 0.4117 was calculated 
+			//by  an  analysis  in  the  layout. Is  was  checked on the icon that had the largest dimension (in
+			//relation  to  the button design, which in this case was the 'list' icon) and calculated the ration
+			//of its size (wich was the height) by the size of the button: width of list icon / button width.
+			var iconWidth = parseFloat(this.html.$("CircularButton").elements[0].offsetWidth) * 0.4117;
+			var iconHeight = iconWidth * proportion;
+			
+			this.html.$(".icon").setCssProperty("width", iconWidth + "px").setCssProperty("height", iconHeight + "px");
+		}
+		else
+		{
+			//calculates proportion (aspect ratio) of icon
+			var proportion = width/height;
+			
+			//calculates the max size of icon (relative to current button size). the value 0.4117 was calculated 
+			//by  an  analysis  in  the  layout. Is  was  checked on the icon that had the largest dimension (in
+			//relation  to  the button design, which in this case was the 'list' icon) and calculated the ration
+			//of its size (wich was the height) by the size of the button: width of list icon / button width.
+			var iconHeight = parseFloat(this.html.$("CircularButton").elements[0].offsetHeight) * 0.4117;
+			var iconWidth = iconHeight * proportion;
+			
+			this.html.$(".icon").setCssProperty("width", iconWidth + "px").setCssProperty("height", iconHeight + "px");
+		}
+		
+		
+		//centralize the icon
+		var newTop = parseFloat(this.html.$("CircularButton").elements[0].offsetHeight) - parseFloat(this.html.$(".icon").elements[0].offsetHeight);
+		newTop /= 2;
+		this.html.$(".icon").setCssProperty("margin-top", newTop + "px").setCssProperty("visibility", "visible");
+	}
+	
+	CircularButton.prototype.private.onMouseDown = function(){
+		this.html.$("CircularButton").setCssProperty("box-shadow", "0 0 0 #000000");
+		if (this.private.autoShowLoading)
+			this.showLoading();
+	};
+	
+	CircularButton.prototype.private.onMouseUp = function(){
+		this.html.$("CircularButton").setCssProperty("box-shadow", "0 0 10px rgb(0, 0, 0)");
+	};
+	
+	
+
+</script>
+<style type="text/css">
+	@keyframes spinner {
+	  to {transform: rotate(360deg);}
+	}
+	 
+	CircularButton .spinner:before {
+	  content: '';
+	  box-sizing: border-box;
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  width: 90%;
+	  height: 90%;
+	  margin-top: -45%;
+	  margin-left: -45%;
+	  border-radius: 50%;
+	  border: 5px solid #ccc;
+	  border-top-color: #000;
+	  animation: spinner .6s linear infinite;
+	}
+
+	CircularButton{
+		position: absolute;
+		width:60px;
+		height:60px;
+		background:#e75a48;
+		border-radius:1000px;
+		
+		box-shadow: 0 0 10px rgb(0, 0, 0); 
+		text-align:center;
+		cursor:pointer;
+		
+		
+	}
+	
+	CircularButton .background{
+		width:100%;
+	}
+	
+	CircularButton .icon{
+		display:inline;
+		visibility:hidden;
+	};
+	
+</style>
+<CircularButton 
+	onmousedown="this.CircularButton.private.onMouseDown.call(this.CircularButton);"
+	onmouseup="this.CircularButton.private.onMouseUp.call(this.CircularButton);"
+>
+	<div class="background">
+	</div>
+	
+	<div class="background spinner" style="display:none"></div>
+	
+	
+	<img class="icon" src=""/>
+
+</CircularButton>

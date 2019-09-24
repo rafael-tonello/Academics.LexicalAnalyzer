@@ -1,0 +1,158 @@
+<script type="text/javascript">
+
+    TitleBar = function(SPointer, arguments){
+        var temp = {};
+        for (var i in this.private){ temp[i] = this.private[i]};
+        this.private = temp;
+
+        this.base = $("TitleBar", true);
+
+        this._adjustBarSize();
+        
+        this.base.$("*").setProperty("ctrl", this);
+        this.currentTitle = this.base.$(".MainText").getValue();
+    };
+
+    TitleBar.prototype.start = function(){ };
+
+    TitleBar.prototype._adjustBarSize = function(){
+        var titleElement = this.base.$(".MainText", true).elements[0];
+        var left = titleElement.offsetLeft;
+        left +=  titleElement.offsetWidth;
+        left += 12;
+
+        this.base.$(".RightBar").setProperty("style.left", left + "px");
+    };
+
+
+    /** Change the titlebar text
+     * @param {string} newTitle - The new title
+     * */
+     TitleBar.prototype.setText = function(newTitle){
+        this.currentTitle = newTitle;
+        //this.base.$(".MainText").setValue(newTitle);
+        //this._adjustBarSize();
+    };
+
+    /** Change the line color
+     * @param {csscolor} color - the new bar color
+     * */        
+    TitleBar.prototype.setLineColor = function(color){
+        this.base.$(".RightBarTheBar").setProperty("style.backgroundImage", "linear-gradient(to right, "+color+", #525147)");
+    };
+
+    /** Change the title bar icon
+     * @this - The TitleBar
+     * @param {string} src - The icon src
+     * */
+     TitleBar.prototype.setIcon = function(src){
+        var _this = this;
+        this.base.$("#TitleIcon").fadeOut(180, function(){
+            _this.base.$("#TitleIcon").elements[0].onload = function(){
+                _this.base.$("#TitleIcon").fadeIn(180);
+            };
+            _this.base.$("#TitleIcon").setProperty("src", src);
+        });
+    };
+
+</script>
+<style type="text/css">
+    
+
+    TitleBar TopBar
+    {
+        background: #414047;
+        width:100%;
+        height:40px;
+        position: fixed;
+        top:0;
+        left:0;
+        z-index:2;
+    }
+
+    TitleBar .MainIcon{
+        position:absolute;
+        height:25px;
+        top:7.5px;
+        left:12.5px;
+        cursor:pointer;
+    }
+
+    TitleBar .UserIcon
+    {
+        position: absolute;
+        height:20px;
+        top:10px;
+        right:125px;
+
+    }
+
+    TitleBar .CalcIcon
+    {
+        position: absolute;
+        height:20px;
+        top:10px;
+        right:100px;
+
+    }
+
+    TitleBar .MainText{
+        position: absolute;
+        top:9px;
+        left:50px;
+        font-family: tahoma, free-sans, sans-serif;
+        font-size:12pt;
+        color: #969696;
+    }
+
+    TitleBar .RightBar{
+        position: absolute;
+        left:10px;
+        right:0px;
+        height:10px;
+
+        top:19px;
+        border-radius: 2.5px;
+    }
+
+    TitleBar .RightBarTheBar{
+        background-image: linear-gradient(to right, #1d00f5, #00173f);
+        height:3px;
+        width:90%;
+        float:left;
+    }
+
+    TitleBar .RightBarTheTitle{
+        position:relative;
+        height:10px;
+        float:left;     
+        margin-top:-8px;
+        color:white;
+        cursor:pointer;
+        font-family: sans-serif, arial, tahoma;
+        font-size:10pt;
+    }   
+
+    .TitleBar {
+        position:absolute;
+        top:40px;
+        left:0;
+        width:100%;
+        height:40px;
+    }
+
+</style>
+<TitleBar>
+    <TopBar>
+        <img
+            class="MainIcon"
+            onclick="window.open('#Main', '_parent');"
+            src="Resources/LogoSanmartin.svg"
+        />
+
+    </TopBar>
+
+    <div class="TitleBar">
+        <img class="MainIcon" id="TitleIcon" onclick="ctrl._showHideShortcuts();"/>
+    </div>  
+</TitleBar>

@@ -1,0 +1,16 @@
+{
+  "short_name": "Sanmartin - Contador a granel",
+  "name": "SanMartin-Granel",
+  "icons": [
+	{
+      "src": "Resources/Favicon.png",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0025cf",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "scope": "/",
+  "theme_color": "#000A9A"
+}

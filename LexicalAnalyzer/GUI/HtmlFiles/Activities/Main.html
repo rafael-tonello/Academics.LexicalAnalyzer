@@ -1,0 +1,249 @@
+<script type="text/javascript">
+	Main = function(SJLP, params){
+		this.videoElement = null;
+		this.fullScreen = false;
+		
+		//evert time system loads the main activity, requests 
+	};
+	Main.prototype.private = {};
+	
+	Main.prototype.start = function(){
+		this.content = this.html.$(".floatVideoContent");
+		this.showVideo();
+		this.standingBottlesCountElement = this.html.$("#standingBottles");
+		this.fallenBottlesCountElement = this.html.$("#fallenBottles");
+		this.notSavedMessageElement = this.html.$(".NotSavedWarning");
+		//force the value of display of notSavedElement
+		this.notSavedMessageElement.setCssProperty("display", "none");
+		
+		
+		//observate the count of bottles in the dao
+		appStates.dao.observateVariables(function(varName, varValue){
+			this.standingBottlesCountElement.setValue(varValue);
+		}, this, "Variables.Counters.Bottles");
+		appStates.dao.observateVariables(function(varName, varValue){
+			this.fallenBottlesCountElement.setValue(varValue);
+		}, this, "Variables.Counters.FallenBottles");
+		
+		
+		//monitor variables about configuration changes. If exists not saved configs, show an appropriate message
+		var _this = this;
+		appStates.dao.observateVariables(function(varName, varValue){
+				if (varValue == "true")
+				{
+					if (this.notSavedMessageElement.getCssProperty("display").toLowerCase() == "none")
+					{
+						this.notSavedMessageElement.setCssProperty("display", "block");
+						this.notSavedMessageElement.downSpeedAnimate(-20, 0, 700, function(newValue){
+							//NOTE: here, the context is the Main.notSavedMessageElement instance
+							
+							_this.notSavedMessageElement.setCssProperty("bottom", newValue + "px");
+						}, function(){}, null, 10);
+					}
+				}
+				else{
+					if (this.notSavedMessageElement.getCssProperty("display").toLowerCase() == "block")
+					{
+						this.notSavedMessageElement.upSpeedAnimate(0, -20, 700, function(newValue){
+							//NOTE: here, the context is the Main.notSavedMessageElement instance
+							_this.notSavedMessageElement.setCssProperty("bottom", newValue + "px");
+						}, function(){
+							_this.notSavedMessageElement.setCssProperty("display", "none");
+						}, null, 10);
+					
+					}
+				
+				}
+				
+		}, this, "Variables.Flags.NotSavedChanges");
+	}
+	
+	Main.prototype.showVideo = function(strObjectName){
+		this.videoElement = AppStates.video.getVideo();
+		this.content.elements[0].appendChild(this.videoElement);
+	};
+	
+	Main.prototype.private.videoClick = function(){
+		window.open("#FullscreenVideo", "_parent");
+	};
+	
+	Main.prototype.dispose = function(continue_callback){
+		AppStates.video.disposeVideo();
+		//remove videoElement from html
+		this.videoElement.parentElement.removeChild(this.videoElement);
+		continue_callback();
+	};
+	
+	
+</script>
+<style type="text/css">
+
+	main{
+		position:absolute;
+		width:100%;
+		height:100%;
+		color:black;
+		font-family:sans-serif, arial, tahoma;
+	}
+	
+	main .floatVideoPanel{
+		position:absolute;
+		top:12px;
+		left:10px;
+		bottom:12px;
+		right:120px;
+		background:white;
+		opacity:0.85;
+		border-radius:5px;
+		z-index:1;
+	}
+	main .texts{
+		position:absolute;
+		bottom:5px;
+		left:10px;
+	}
+	main .textContent{
+		position:relative;
+		left:0px;
+		width:100%;
+		height:20px;
+	}
+	
+	main .textContent_left{
+		position:absolute;
+		left: 0px;
+		font-size:10px;
+		font-weight:bold;
+		bottom:9px;
+		width:100px;
+	}
+	
+	main .textContent_right{
+		position:absolute;
+		left: 90px;
+		font-size:25px;
+		font-weight:bold;
+		bottom:0px;
+	}
+	
+	main .fullScreenVideoPanel{
+		position:absolute;
+		width:100%;
+		height:100%;
+		display:none;
+		z-index:3;
+	}
+	
+	main .floatVideoContent{
+		position:absolute;
+		left:8px;
+		top:8px;
+		right:8px;
+		bottom:60px;
+	}
+	
+	main .BottomButton{
+		position:absolute;
+		right:85px;
+		bottom:70px;
+		z-index:2;
+	}
+	
+	main .TopButton{
+		position:absolute;
+		right:85px;
+		top:12px;
+		z-index:2;
+	}
+	
+	main .NotSavedWarning{
+		position:fixed;
+		height:20px;
+		bottom:-20px;
+		width:100%;
+		color:black;
+		background:#ffc800;
+		z-index:3;
+		font-size:10px;
+		cursor:pointer;
+		display:none;
+	}
+	
+	main .NotSavedWarning .NotSavedText{
+		position:absolute;
+		top:3px;
+		left:10px;
+		cursor:pointer;
+	}
+
+	main .logoSanmartin{
+		display:block;
+		position:fixed;
+		z-index:10;
+		height:40px;
+		bottom:20px;
+		right:135px;
+		
+	}
+
+	@media (max-height: 300px){
+		main .logoSanmartin{
+			height:20px;
+			bottom:15px;
+			right:auto;
+			left:20px;
+
+			
+		}
+	}
+
+</style>
+
+<main>
+	<div class="floatVideoPanel" onclick="this.main.private.videoClick.call(this.main)">
+		<div class="floatVideoContent">
+		
+		</div>
+		<div class="texts">
+			<div class="textContent">
+				<div class="textContent_left">
+					Standing bottles:
+				</div>
+				<div class="textContent_right" id="standingBottles">
+					0
+				</div>
+			</div>
+			<div class="textContent">
+				<div class="textContent_left">
+					Fallen bottles:
+				</div>
+				<div class="textContent_right" id="fallenBottles">
+					0
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="fullScreenVideoPanel" onclick="this.main.private.videoClick.call(this.main)"></div>
+	
+	<div 
+		class="TopButton" 
+		SJLLoad="Shared/Components/CircularButton" 
+		background="#17719a" 
+		icon="Resources/Icons.List.svg" 
+		onclick="window.open('#ImageParameters', '_parent');"
+		autoShowLoading="true"
+	></div>
+	<div class="BottomButton"
+		SJLLoad="Shared/Components/CircularButton"
+		background="#179a69"
+		icon="Resources/Icons.Chart.svg"
+		onclick="window.open('#Reports', '_parent');"
+		autoShowLoading="true"
+	></div>
+	<div class="NotSavedWarning" onclick="window.open('#ImageParameters', '_parent');">
+		<div class="NotSavedText">There are unsaved parameters! Click or touch here to see more</div>
+	</div>
+
+	<img  class="logoSanmartin" src="Resources/LogoSanmartin2.svg"/>
+</main>

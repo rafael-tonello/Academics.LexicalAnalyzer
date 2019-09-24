@@ -1,0 +1,148 @@
+<script type="text/javascript">
+	QuestionDialog = function(){
+		this._private = {};
+		for (var c in this.private) this._private[c] = this.private[c];
+		this.private = this._private;
+		
+	}
+	QuestionDialog.prototype.private = {};
+	
+	/* args is a vector with following data:
+	 * title 
+	* message, 
+	* backgroundColor, 
+	* buttonsColors,
+	* confirmCallback, 
+	* cancelCallback, 
+	* confirmText, 
+	* cancelText
+	 * */
+	QuestionDialog.prototype.start = function(args){
+		
+
+		var _this = this;
+		setTimeout(function(){
+			console.log("this", _this);
+		}, 1);
+		
+		
+		var title = args[0];
+		var message = args[1];
+		var background = args[2] || red;
+		var buttonColors = args[3] || "#AA0000";
+		this.private.confirmCallback = args[4] || function(){};
+		this.private.cancelCallback = args[5] || function(){};
+		this.private.confirmText = args[6] || "Confirm";
+		this.private.cancelText = args[7] || "Cancel";
+		
+		
+		this.html.$(".title").setValue(title);
+		this.html.$(".text").setValue(message);
+		console.log("background", background);
+		this.html.$(".messageContainer").setCssProperty("background", background);
+		this.html.$(".cancelButton").setAttribute("value", this.private.cancelText).elements[0].ColorButton.setBackground(buttonColors);
+		this.html.$(".confirmButton").setAttribute("value", this.private.confirmText).elements[0].ColorButton.setBackground(buttonColors);
+		
+		//adjust textsizes according to screen size (the constant values was obtained dividing the sizes, in css classes, by the screen width of development enviroment, 496px)
+		var newSize = 0.030234* parseInt(screen.width);
+		this.html.$(".text").setCssProperty("font-size", newSize + "px");
+		var newSize = 0.04032* parseInt(screen.width);
+		this.html.$(".title").setCssProperty("font-size", newSize + "px");
+		
+	};
+	
+	QuestionDialog.prototype.private.confirm = function(){
+		this.html.hide();
+		this.html.elements[0].parentElement.removeChild(this.html.elements[0]);
+		this.private.confirmCallback();
+	};
+
+	QuestionDialog.prototype.private.cancel = function(){
+		this.html.hide();
+		this.html.elements[0].parentElement.removeChild(this.html.elements[0]);
+		this.private.cancelCallback();
+	};
+
+</script>
+<style type="text/css">
+	QuestionDialog{
+		position: fixed;
+		width:100%;
+		height:100%;
+		top:0;
+		left:0;
+		z-index:5;
+		color:white;
+	}
+	
+	QuestionDialog .background{
+		position:absolute;
+		width:100%;
+		height:100%;
+		top:0;
+		left:0;
+		background:black;
+		opacity:0.7;
+	}
+	
+	QuestionDialog .messageContainer{
+		position: absolute;
+		width:80%;
+		height:70%;
+		left:10%;
+		top:15%;
+		background:red;
+		border-radius:5px;
+		box-shadow: 0 0 40px rgb(0, 0, 0); 
+	}
+	
+	QuestionDialog .title{
+		font-size:20pt;
+		top:10%;
+		left:5%;
+		position:absolute;
+		font-family: sans-serif, arial, tahoma;
+	}
+	
+	QuestionDialog .text{
+		position:absolute;
+		top:25%;
+		left:10%;
+		right:10%;
+		font-family:sans-serif, arial, tahoma;
+		font-size:15pt;
+	}
+	
+	QuestionDialog .cancelButton{
+		position:absolute;
+		bottom:35px;
+		left:50%;
+		margin-left:-95px;
+	}
+
+	QuestionDialog .confirmButton{
+		position:absolute;
+		bottom:35px;
+		left:50%;
+		margin-left:5px;
+	}
+</style>
+<QuestionDialog>
+	<div class="background"></div>
+	<div class="messageContainer">
+		<div class="title">Dialog title</div>
+		<div class="text">Dialog content. This text can be long and contains a few lines of text. But, the good sens must be used to inert data here.</div>
+		<div 
+			class="cancelButton"
+			SJLLoad="Shared/Components/ColorButton"
+			value="Ok"
+			onclick="this.QuestionDialog.private.cancel.call(this.QuestionDialog);"
+		></div>
+		<div 
+			class="confirmButton"
+			SJLLoad="Shared/Components/ColorButton"
+			value="Ok"
+			onclick="this.QuestionDialog.private.confirm.call(this.QuestionDialog);"
+		></div>
+	</div>
+</QuestionDialog>

@@ -1,0 +1,359 @@
+<script type="text/javascript">
+	RangeConfigItem = function(){
+		this._private = {};
+		for (var c in this.private){this._private[c] = this.private[c];}
+		this.private = this._private;
+		
+		this.currentValue1 = 0;
+		this.currentValue2 = 0;
+		this.min1 = -1000000;	
+		this.max1 = 1000000;
+		this.min2 = -1000000;	
+		this.max2 = 1000000;
+		
+		this.step = 1;
+		this.onChangeEvent1 = {evalString: "(function(){})();", context:window};
+		this.onChangeEvent2 = {evalString: "(function(){})();", context:window};
+
+	}
+	
+	/* Creates a custom container to encapsulate private objects */
+	RangeConfigItem.prototype.private = {};
+	
+	/* This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work 
+	*/
+	RangeConfigItem.prototype.start = function(){ };
+	
+	RangeConfigItem.prototype.setSeparator = function(newSep){
+		this.html.$("#separator").setValue(newSep);
+	};
+	//range 1
+	{
+	
+		RangeConfigItem.prototype.private.setValue1 = function(newValue, callEvents){
+			//vefiry if the new value is between minimum and maximum bounds
+			newValue = parseFloat(newValue);
+			
+			if (newValue > this.max1)
+				newValue = this.max1;
+			else if (newValue < this.min1)
+				newValue = this.min1;
+				
+			this.setValue1(newValue);
+			
+			if (typeof(callEvents) == 'undefined' || callEvents == true)
+				this.private.callSetOnChange1.call(this, newValue); 
+		
+		};
+		
+		//changes the html of text at right side (css class .currentValue);
+		RangeConfigItem.prototype.setValue1 = function(newValue){
+			//update the internal counter
+			this.currentValue1 = newValue;
+			
+			//mirror the internal counter to the html
+			this.html.$("#currentValue1").setValue(newValue);
+		};
+		
+		RangeConfigItem.prototype.setMax1 = function(newMax){
+			//change the maximum value
+			this.max1 = parseFloat(newMax);
+			
+			//update the current value
+			this.setValue1(this.currentValue1);
+		};
+		
+		RangeConfigItem.prototype.setMin1 = function(newMin){
+			//change the minimum value
+			this.min1 = parseFloat(newMin);
+			
+			//update the current value
+			this.setValue1(this.currentValue1);
+		};
+		
+		//this event is called by button minus (in html)
+		RangeConfigItem.prototype.private.minus1Click = function(){
+			this.private.setValue1.call(this, parseFloat(this.currentValue1) - parseFloat(this.private.getDynamicStep.call(this)));	
+		};
+
+		//method onchange of base element
+		RangeConfigItem.prototype.setOnchange1 = function(stringToEvaluate, context){
+			this.onChangeEvent1 = {evalString: stringToEvaluate, context: context};
+		};
+		RangeConfigItem.prototype.private.callSetOnChange1 = function(newValue){
+			var _this = this;
+			(function(value){
+				//value will apears to evaluated functions as 'value'
+				eval(_this.onChangeEvent1.evalString)
+			}).call(this.onChangeEvent1.context, newValue);
+		};
+
+		RangeConfigItem.prototype.private.plus1Down = function(){
+			var _this = this;
+			this.private.setValue1.call(this, parseFloat(this.currentValue1) + parseFloat(this.step));	
+			this.plus1Time = setTimeout(function(){
+				_this.plus1Time2 = setInterval(function(){
+					_this.private.setValue1.call(_this, parseFloat(_this.currentValue1) + parseFloat(_this.step));	
+				}, 100);
+			}, 500);
+		};
+
+		RangeConfigItem.prototype.private.plus1Up = function(){
+			clearTimeout(this.plus1Time);
+			clearInterval(this.plus1Time2);
+			this.private.setValue1.call(this, parseFloat(this.currentValue1));	
+		};
+
+		RangeConfigItem.prototype.private.minus1Down = function(){
+			var _this = this;
+			this.private.setValue1.call(this, parseFloat(this.currentValue1) - parseFloat(this.step));	
+			this.minus1Time = setTimeout(function(){
+				_this.minus1Time2 = setInterval(function(){
+					_this.private.setValue1.call(_this, parseFloat(_this.currentValue1) - parseFloat(_this.step));	
+				}, 100);
+			}, 500);
+		};
+
+		RangeConfigItem.prototype.private.minus1Up = function(){
+			clearTimeout(this.minus1Time);
+			clearInterval(this.minus1Time2);
+			this.private.setValue1.call(this, parseFloat(this.currentValue1));	
+		};
+	}
+	
+	//range 2
+	{
+	
+		RangeConfigItem.prototype.setMax2 = function(newMax){
+			//change the maximum value
+			this.max2 = parseFloat(newMax);
+			
+			//update the current value
+			this.setValue2(this.currentValue2);
+		};
+		
+		RangeConfigItem.prototype.private.setValue2 = function(newValue, callEvents){
+			//vefiry if the new value is between minimum and maximum bounds
+			newValue = parseFloat(newValue);
+			
+			if (newValue > this.max2)
+				newValue = this.max2;
+			else if (newValue < this.min2)
+				newValue = this.min2;
+
+			this.setValue2(newValue);
+			
+			if (typeof(callEvents) == 'undefined' || callEvents == true)
+				this.private.callSetOnChange2.call(this, newValue); 
+		
+		};
+		
+		//changes the html of text at right side (css class .currentValue);
+		RangeConfigItem.prototype.setValue2 = function(newValue){
+			//update the internal counter
+			this.currentValue2 = newValue;
+			
+			//mirror the internal counter to the html
+			this.html.$("#currentValue2").setValue(newValue);
+		};
+		
+		RangeConfigItem.prototype.setMin2 = function(newMin){
+			//change the minimum value
+			this.min2 = parseFloat(newMin);
+			
+			//update the current value
+			this.setValue2(this.currentValue2);
+		};
+
+		
+		//method onchange of base element
+		RangeConfigItem.prototype.setOnchange2 = function(stringToEvaluate, context){
+			this.onChangeEvent2 = {evalString: stringToEvaluate, context: context};
+		};
+		RangeConfigItem.prototype.private.callSetOnChange2 = function(newValue){
+			var _this = this;
+			(function(value){
+				//value will apears to evaluated functions as 'value'
+				eval(_this.onChangeEvent2.evalString)
+			}).call(this.onChangeEvent2.context, newValue);
+		};
+	
+		RangeConfigItem.prototype.private.plus2Down = function(){
+			var _this = this;
+			this.private.setValue2.call(this, parseFloat(this.currentValue2) + parseFloat(this.step));	
+			this.plus2Time = setTimeout(function(){
+				_this.plus2Time2 = setInterval(function(){
+					_this.private.setValue2.call(_this, parseFloat(_this.currentValue2) + parseFloat(_this.step), false);	
+				}, 100);
+			}, 500);
+		};
+
+		RangeConfigItem.prototype.private.plus2Up = function(){
+			clearTimeout(this.plus2Time);
+			clearInterval(this.plus2Time2);
+			this.private.setValue2.call(this, parseFloat(this.currentValue2));	
+		};
+
+		RangeConfigItem.prototype.private.minus2Down = function(){
+			var _this = this;
+			this.private.setValue2.call(this, parseFloat(this.currentValue2) - parseFloat(this.step));	
+			this.minus2Time = setTimeout(function(){
+				_this.minus2Time2 = setInterval(function(){
+					_this.private.setValue2.call(_this, parseFloat(_this.currentValue2) - parseFloat(_this.step), false);	
+				}, 100);
+			}, 500);
+		};
+
+		RangeConfigItem.prototype.private.minus2Up = function(){
+			clearTimeout(this.minus2Time);
+			clearInterval(this.minus2Time2);
+			this.private.setValue2.call(this, parseFloat(this.currentValue2));	
+		};
+	}
+		
+	RangeConfigItem.prototype.private.getDynamicStep = function(){
+		//Fast presses start at 140ms and slow pressures start at around 650ms
+	};
+
+	RangeConfigItem.prototype.setStep = function(newStep){
+		//change the minimum value
+		this.step = parseFloat(newStep);
+	};
+	
+	RangeConfigItem.prototype.setLegend = function(newStep){
+		//change the minimum value
+		this.html.$(".left").setValue(newStep);
+	};
+
+	RangeConfigItem.prototype.private.manualSet = function(){
+		var currValue1 = this.html.$("#currentValue1").getValue();
+		var newValue1 = parseInt(prompt("Enter the new value", currValue1));
+		if (!isNaN(newValue1))
+			this.private.setValue1.call(this, newValue1);
+		var currValue2 = this.html.$("#currentValue2").getValue();
+		var newValue2 = parseInt(prompt("Enter the new value", currValue2));
+		if (!isNaN(newValue2))
+			this.private.setValue2.call(this, newValue2);
+	};
+
+	globalTouch = false;
+</script>
+<style type="text/css">
+	RangeConfigItem {
+		position:absolute;
+		width:100%;
+		height:100%;
+		font-family: sans-serif, arial, tahoma;
+		font-size:10px;
+		font-weight:bold;	
+	}
+	
+	RangeConfigItem .left{
+		position:absolute;
+		top:0;
+		left:0;
+		width:35%;
+		text-align:right;
+		margin-top:10px;
+	}
+	
+	RangeConfigItem .right{
+		position:absolute;
+		top:0;
+		left:35%;
+		width:65%;
+	}
+	
+	RangeConfigItem .right .btMinus1{
+		position:absolute;
+		margin-top:5px;
+		margin-left:50px;
+		
+	}
+	
+	RangeConfigItem .right .btPlus1{
+		position:absolute;
+		margin-top:5px;
+		margin-left:75px;
+	}
+	
+	
+	RangeConfigItem .right .btMinus2{
+		position:absolute;
+		margin-top:5px;
+		margin-left:105px;
+		
+	}
+	
+	RangeConfigItem .right .btPlus2{
+		position:absolute;
+		margin-top:5px;
+		margin-left:130px;
+	}
+	
+	
+	
+	RangeConfigItem .right .currentValue{
+		margin-top:10px;
+		position:absolute;
+		margin-left:5px;
+		cursor:pointer;
+	}
+	
+	RangeConfigItem .right CircularButton{
+		width:20px !important;
+		height:20px;
+	}
+</style>
+<RangeConfigItem>
+	<div class="left">--</div>
+	<div class="right">
+		<div class="currentValue" onclick="this.RangeConfigItemInstance.private.manualSet.call(this.RangeConfigItemInstance);">
+			<span id="currentValue1">0</span><span id="separator">-</span><span id="currentValue2">0</span>
+		
+		</div>
+		<div 
+			class="btMinus1" 
+			SJLLoad="Shared/Components/CircularButton" 
+			icon="Resources/Icons.Minus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true;this.RangeConfigItemInstance.private.minus1Down.call(this.RangeConfigItemInstance); return false;"
+			ontouchend="globalTouch = true;this.RangeConfigItemInstance.private.minus1Up.call(this.RangeConfigItemInstance); return false;"
+			onmousedown="if (globalTouch) return; this.RangeConfigItemInstance.private.minus1Down.call(this.RangeConfigItemInstance); return false;"
+			onmouseup="if (globalTouch) return; this.RangeConfigItemInstance.private.minus1Up.call(this.RangeConfigItemInstance); return false;"
+		></div>
+		<div 	
+			class="btPlus1" 
+			SJLLoad="Shared/Components/CircularButton" 
+			icon="Resources/Icons.Plus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true; this.RangeConfigItemInstance.private.plus1Down.call(this.RangeConfigItemInstance); return false;" 
+			ontouchend="globalTouch = true;this.RangeConfigItemInstance.private.plus1Up.call(this.RangeConfigItemInstance); return false;" 
+			onmousedown="if (globalTouch) return; this.RangeConfigItemInstance.private.plus1Down.call(this.RangeConfigItemInstance); return false;" 
+			onmouseup="if (globalTouch) return; this.RangeConfigItemInstance.private.plus1Up.call(this.RangeConfigItemInstance); return false;" 	
+		></div>
+		
+		
+		<div 
+			class="btMinus2" 
+			SJLLoad="Shared/Components/CircularButton" 
+			icon="Resources/Icons.Minus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true; this.RangeConfigItemInstance.private.minus2Down.call(this.RangeConfigItemInstance); return false;" 
+			ontouchend="globalTouch = true;this.RangeConfigItemInstance.private.minus2Up.call(this.RangeConfigItemInstance); return false;" 
+			onmousedown="if (globalTouch) return; this.RangeConfigItemInstance.private.minus2Down.call(this.RangeConfigItemInstance); return false;" 
+			onmouseup="if (globalTouch) return; this.RangeConfigItemInstance.private.minus2Up.call(this.RangeConfigItemInstance); return false;" 	
+		></div>
+		<div 	
+			class="btPlus2" 
+			SJLLoad="Shared/Components/CircularButton" 
+			icon="Resources/Icons.Plus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true; this.RangeConfigItemInstance.private.plus2Down.call(this.RangeConfigItemInstance); return false;" 
+			ontouchend="globalTouch = true;this.RangeConfigItemInstance.private.plus2Up.call(this.RangeConfigItemInstance); return false;" 
+			onmousedown="if (globalTouch) return; this.RangeConfigItemInstance.private.plus2Down.call(this.RangeConfigItemInstance); return false;" 
+			onmouseup="if (globalTouch) return; this.RangeConfigItemInstance.private.plus2Up.call(this.RangeConfigItemInstance); return false;" 	
+		></div>
+	</div>
+</RangeConfigItem>

@@ -1,0 +1,196 @@
+<script type="text/javascript">
+	LinkConfigItem = function(){
+		this._private = {};
+			for (var c in this.private){this._private[c] = this.private[c];}
+		this.private = this._private;
+		
+		this.currentValue = 0;
+		this.max = 1000000;
+		this.min = -1000000;	
+		this.step = 1;
+		this.onChangeEvent = {evalString: "(function(){})();", context: window};
+	}
+	
+	/* Creates a custom container to encapsulate private objects */
+	LinkConfigItem.prototype.private = {};
+	
+	/* This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work */
+	LinkConfigItem.prototype.start = function(){
+	
+	};
+	
+	LinkConfigItem.prototype.private.setValue = function(newValue, callEvents){
+		//vefiry if the new value is between minimum and maximum bounds
+		newValue = parseFloat(newValue);
+		
+		if (newValue > this.max)
+			newValue = this.max;
+		else if (newValue < this.min)
+			newValue = this.min;
+
+		this.setValue(newValue);
+		
+		if (typeof(callEvents) == 'undefined' || callEvents == true)
+			this.private.callSetOnChange.call(this, newValue); 
+	
+	};
+	
+	//changes the html of text at right side (css class .currentValue);
+	LinkConfigItem.prototype.setValue = function(newValue){
+		//update the internal counter
+		this.currentValue = newValue;
+		
+		//mirror the internal counter to the html
+		this.html.$("#currentValue").setValue(newValue);
+	};
+	
+	LinkConfigItem.prototype.setMax = function(newMax){
+		//change the maximum value
+		this.max = parseFloat(newMax);
+		
+		//update the current value
+		this.setValue(this.currentValue);
+	};
+	
+	LinkConfigItem.prototype.setMin = function(newMin){
+		//change the minimum value
+		this.min = parseFloat(newMin);
+		
+		//update the current value
+		this.setValue(this.currentValue);
+	};
+	
+	LinkConfigItem.prototype.setStep = function(newStep){
+		//change the minimum value
+		this.step = parseFloat(newStep);
+	};
+	
+	LinkConfigItem.prototype.setLegend = function(newStep){
+		//change the minimum value
+		this.html.$(".left").setValue(newStep);
+	};
+	
+	LinkConfigItem.prototype.private.plusDown = function(){
+		var _this = this;
+		this.private.setValue.call(this, parseFloat(this.currentValue) + parseFloat(this.step));	
+		this.plusTime = setTimeout(function(){
+			_this.plusTime2 = setInterval(function(){
+				_this.private.setValue.call(_this, parseFloat(_this.currentValue) + parseFloat(_this.step), false);	
+			}, 100);
+		}, 500);
+	};
+
+	LinkConfigItem.prototype.private.plusUp = function(){
+		clearTimeout(this.plusTime);
+		clearInterval(this.plusTime2);
+		this.private.setValue.call(this, parseFloat(this.currentValue));	
+	};
+
+	LinkConfigItem.prototype.private.minusDown = function(){
+		var _this = this;
+		this.private.setValue.call(this, parseFloat(this.currentValue) - parseFloat(this.step));	
+		this.minusTime = setTimeout(function(){
+			_this.minusTime2 = setInterval(function(){
+				_this.private.setValue.call(_this, parseFloat(_this.currentValue) - parseFloat(_this.step), false);	
+			}, 100);
+		}, 500);
+	};
+
+	LinkConfigItem.prototype.private.minusUp = function(){
+		clearTimeout(this.minusTime);
+		clearInterval(this.minusTime2);
+		this.private.setValue.call(this, parseFloat(this.currentValue));	
+	};
+	
+	
+	//method onchange of base element
+	LinkConfigItem.prototype.setOnchange = function(stringToEvaluate, context){
+		this.onChangeEvent = {evalString: stringToEvaluate, context: context};
+	};
+	LinkConfigItem.prototype.private.callSetOnChange = function(newValue){
+		var _this = this;
+		(function(value){
+			eval(_this.onChangeEvent.evalString)
+		}).call(this.onChangeEvent.context, newValue);
+	};
+
+	LinkConfigItem.prototype.private.manualSet = function(){
+		//get current value 
+		var currValue = this.html.$("#currentValue").getValue();
+		var newValue = parseInt(prompt("Enter the new value", currValue));
+		this.private.setValue.call(this, newValue);
+	}
+
+	LinkConfigItem.prototype._buttonClick = function(){
+		this.html.callEvent("onButtonClick", {});
+	}
+	
+</script>
+<style type="text/css">
+	LinkConfigItem {
+		position:absolute;
+		width:100%;
+		height:100%;
+		font-family: sans-serif, arial, tahoma;
+		font-size:10px;
+		font-weight:bold;	
+	}
+	
+	LinkConfigItem .left{
+		position:absolute;
+		top:-10px;
+		left:0;
+		width:35%;
+		text-align:right;
+		margin-top:10px;
+	}
+	
+	LinkConfigItem .right{
+		position:absolute;
+		top:0;
+		left:35%;
+		width:65%;
+		background: black;
+	}
+	
+	LinkConfigItem .right .currentValue{
+		position:absolute;
+		margin-left:5px;
+		cursor:pointer;
+	}
+
+	LinkConfigItem .right .setButton{
+		position: absolute;
+		left:110px;
+		top:-5px;
+
+	}
+
+	LinkConfigItem .right .setButton colorButton{
+		width:45px !important;
+	}
+	
+	LinkConfigItem .right CircularButton{
+		width:20px !important;
+		height:20px;
+	}
+</style>
+<LinkConfigItem>
+	<div class="left">--</div>
+	<div class="right">
+		<div
+			class="currentValue"
+			id="currentValue" 
+			onclick="this.LinkConfigItem.private.manualSet.call(this.LinkConfigItem);"
+		>0</div>
+		<div
+			class="setButton"
+			SJLLoad="Shared/Components/ColorButton"
+			legend="Set third box top"
+			value="Set"
+			background="#e75a48"
+			onclick="this.LinkConfigItem._buttonClick();"
+		></div>
+	</div>
+</LinkConfigItem>

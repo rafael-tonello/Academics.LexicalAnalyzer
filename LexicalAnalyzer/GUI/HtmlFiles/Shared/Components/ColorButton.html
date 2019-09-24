@@ -1,0 +1,72 @@
+<script type="text/javascript">
+	ColorButton = function(SJLP, Arguments){};
+	
+	/** Creates a custom container to encapsulate private objects */
+	ColorButton.prototype.private = {};
+	
+	/** This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work*/
+	ColorButton.prototype.start = function(){
+	
+	};
+	
+	/** Changes the button background
+	* @param (string) newBackground - A css string with the new 'background' value.
+	*/
+	ColorButton.prototype.setBackground= function (newBackground){
+		this.html.$("ColorButton").setCssProperty("background", newBackground);
+	};
+	
+	
+	/** Changes the text of button.
+	* @param (string) newValue - The new value of button
+	*/
+	ColorButton.prototype.setValue = function(newValue){
+		this.html.$(".CBtext").setValue(newValue);
+	
+	};
+	
+	/** This funciton is called by element in the html */
+	ColorButton.prototype.private.onMouseDown = function(){
+		this.html.$("ColorButton").setCssProperty("box-shadow", "0 0 0 #000000");
+	};
+	
+	/** This funciton is called by element in the html */
+	ColorButton.prototype.private.onMouseUp = function(){
+		this.html.$("ColorButton").setCssProperty("box-shadow", "0 0 10px rgb(0, 0, 0)");
+	};
+
+</script>
+<style type="text/css">
+	ColorButton{
+		position: absolute;
+		width:90px;
+		height:25px;
+		background:#e75a48;
+		border-radius:3px;
+		
+		box-shadow: 0 0 10px rgb(0, 0, 0); 
+		text-align:center;
+		cursor:pointer;
+		background:#AA2020;
+	}
+	
+	ColorButton .CBtext{
+		color:white;
+		font-size:10px;
+		font-weight:bolx;
+		width:100%;
+		text-align:center;
+		position:absolute;
+		top:7px;
+		font-family: sans-serif, free-sans, arial, tahoma;
+	}
+	
+</style>
+<ColorButton 
+	onmousedown="this.ColorButton.private.onMouseDown.call(this.ColorButton);"
+	onmouseup="this.ColorButton.private.onMouseUp.call(this.ColorButton);"
+>
+	<div class="CBtext">Button Text</div>
+
+</ColorButton>

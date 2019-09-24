@@ -1,0 +1,122 @@
+<script type="text/javascript">
+	HorizontalScrollAnimation = function(SJLP){
+		this._ct1 = SJLP.$("#ct1");
+		this._ct2 = SJLP.$("#ct2");
+
+	};
+	
+	/** This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work */
+	HorizontalScrollAnimation.prototype.start = function(content){
+		this.timer = null;
+		this.time = 1000;
+		
+		this.animating = false;
+		
+		
+		this._ct1.startLeft = 0;
+		this._ct2.startLeft = 100;
+		
+		this.direction = "left";
+	};
+	
+	
+	
+	HorizontalScrollAnimation.prototype.setContent = function(content){
+		this.html.$("#ct1").setValue(content);
+		this.html.$("#ct2").setValue(content);
+		HorizontalScrollAnimation.prototype.privates.animate.call(this);
+		
+		this.setDirection(this.direction);
+	};
+	
+	HorizontalScrollAnimation.prototype.setTime = function(newTime){
+		this.time = newTime;
+	};
+	
+	HorizontalScrollAnimation.prototype.setDirection = function(newDirection){
+		this.direction = newDirection;
+		if (this.direction == "left"){
+		
+			var nLeft = parseFloat(this._ct1.getCssProperty("left")) + 100;
+			this._ct2.setCssProperty("left", nLeft + "%");
+			this._ct2.startLeft = 100;
+		}
+		else{
+			var nLeft = parseFloat(this._ct1.getCssProperty("left")) - 100;
+			this._ct2.setCssProperty("left", nLeft + "%") 
+			this._ct2.startLeft = -100;
+		}
+	
+	}
+	
+	HorizontalScrollAnimation.prototype.privates = {};
+	
+	HorizontalScrollAnimation.prototype.privates.animate = function(){
+		return;
+		//stop any curren animation
+		var _this = this;
+		var dest = this.direction == "left" ? -100 : 100;
+		SJL.animate(0, dest, this.time, function(curr){
+			var newLeft = _this._ct1.startLeft + curr;
+			var newLeft2 = _this._ct2.startLeft + curr;
+			
+			
+			_this._ct1.setCssProperty("left", newLeft + "%");
+			_this._ct2.setCssProperty("left", newLeft2 + "%");
+			
+		}, function(){
+		
+			if (_this.direction == "left"){
+				if (_this._ct1.newLeft < -95)
+					_this.ct1.newLeft = 100;
+				
+				if (_this._ct2.newLeft < -95)
+					_this.ct2.newLeft = 100;
+			}
+			else{
+				if (_this._ct1.newLeft > 95)
+					_this.ct1.newLeft = -100;
+				
+				if (_this._ct2.newLeft > 95)
+					_this.ct2.newLeft = -100;
+			}
+				
+			HorizontalScrollAnimation.prototype.privates.animate.call(_this);
+		
+		});//, null_, 100); //uses a large minimun animation interval to reduce the CPU usage
+		//SJL.extend(["animate", "ani"],  function (from, to, milisseconds, callback, endCallback, _pointers_, __data__) {
+	}
+	
+	
+	
+</script>
+
+<style type="text/css">
+	HorizontalScrollAnimation{
+		position:absolute;
+		width:100%;
+		top:0;
+		left:0;
+		color:white;
+	}
+	
+	HorizontalScrollAnimation #ct1{
+		position:absolute;
+		width:100%;
+		top:0;
+		left:-25%;
+	}
+	
+	HorizontalScrollAnimation #ct2{
+		position:absolute;
+		width:100%;
+		top:0;
+		left:75%;
+	}
+
+</style>
+<HorizontalScrollAnimation>
+	<div id="ct1"></div>
+	<div id="ct2"></div>
+</HorizontalScrollAnimation>

@@ -1,0 +1,204 @@
+<script type="text/javascript">
+	NumericConfigItem = function(){
+		this._private = {};
+			for (var c in this.private){this._private[c] = this.private[c];}
+		this.private = this._private;
+		
+		this.currentValue = 0;
+		this.max = 1000000;
+		this.min = -1000000;	
+		this.step = 1;
+		this.onChangeEvent = {evalString: "(function(){})();", context: window};
+	}
+	
+	/* Creates a custom container to encapsulate private objects */
+	NumericConfigItem.prototype.private = {};
+	
+	/* This funciton is automatically called by SJL when the button 
+	* instanciating is complete and new component is ready to work */
+	NumericConfigItem.prototype.start = function(){
+	
+	};
+	
+	NumericConfigItem.prototype.private.setValue = function(newValue, callEvents){
+		//vefiry if the new value is between minimum and maximum bounds
+		newValue = parseFloat(newValue);
+		
+		if (newValue > this.max)
+			newValue = this.max;
+		else if (newValue < this.min)
+			newValue = this.min;
+
+		this.setValue(newValue);
+		
+		if (typeof(callEvents) == 'undefined' || callEvents == true)
+			this.private.callSetOnChange.call(this, newValue); 
+	
+	};
+	
+	//changes the html of text at right side (css class .currentValue);
+	NumericConfigItem.prototype.setValue = function(newValue){
+		//update the internal counter
+		this.currentValue = newValue;
+		
+		//mirror the internal counter to the html
+		this.html.$("#currentValue").setValue(newValue);
+	};
+	
+	NumericConfigItem.prototype.setMax = function(newMax){
+		//change the maximum value
+		this.max = parseFloat(newMax);
+		
+		//update the current value
+		this.setValue(this.currentValue);
+	};
+	
+	NumericConfigItem.prototype.setMin = function(newMin){
+		//change the minimum value
+		this.min = parseFloat(newMin);
+		
+		//update the current value
+		this.setValue(this.currentValue);
+	};
+	
+	NumericConfigItem.prototype.setStep = function(newStep){
+		//change the minimum value
+		this.step = parseFloat(newStep);
+	};
+	
+	NumericConfigItem.prototype.setLegend = function(newStep){
+		//change the minimum value
+		this.html.$(".left").setValue(newStep);
+	};
+	
+	NumericConfigItem.prototype.private.plusDown = function(){
+		var _this = this;
+		this.private.setValue.call(this, parseFloat(this.currentValue) + parseFloat(this.step));	
+		this.plusTime = setTimeout(function(){
+			_this.plusTime2 = setInterval(function(){
+				_this.private.setValue.call(_this, parseFloat(_this.currentValue) + parseFloat(_this.step), false);	
+			}, 100);
+		}, 500);
+	};
+
+	NumericConfigItem.prototype.private.plusUp = function(){
+		clearTimeout(this.plusTime);
+		clearInterval(this.plusTime2);
+		this.private.setValue.call(this, parseFloat(this.currentValue));	
+	};
+
+	NumericConfigItem.prototype.private.minusDown = function(){
+		var _this = this;
+		this.private.setValue.call(this, parseFloat(this.currentValue) - parseFloat(this.step));	
+		this.minusTime = setTimeout(function(){
+			_this.minusTime2 = setInterval(function(){
+				_this.private.setValue.call(_this, parseFloat(_this.currentValue) - parseFloat(_this.step), false);	
+			}, 100);
+		}, 500);
+	};
+
+	NumericConfigItem.prototype.private.minusUp = function(){
+		clearTimeout(this.minusTime);
+		clearInterval(this.minusTime2);
+		this.private.setValue.call(this, parseFloat(this.currentValue));	
+	};
+	
+	
+	//method onchange of base element
+	NumericConfigItem.prototype.setOnchange = function(stringToEvaluate, context){
+		this.onChangeEvent = {evalString: stringToEvaluate, context: context};
+	};
+	NumericConfigItem.prototype.private.callSetOnChange = function(newValue){
+		var _this = this;
+		(function(value){
+			eval(_this.onChangeEvent.evalString)
+		}).call(this.onChangeEvent.context, newValue);
+	};
+
+	NumericConfigItem.prototype.private.manualSet = function(){
+		//get current value 
+		var currValue = this.html.$("#currentValue").getValue();
+		var newValue = parseInt(prompt("Enter the new value", currValue));
+		this.private.setValue.call(this, newValue);
+	}
+
+	globalTouch = false;
+	
+</script>
+<style type="text/css">
+	NumericConfigItem {
+		position:absolute;
+		width:100%;
+		height:100%;
+		font-family: sans-serif, arial, tahoma;
+		font-size:10px;
+		font-weight:bold;	
+	}
+	
+	NumericConfigItem .left{
+		position:absolute;
+		top:0;
+		left:0;
+		width:35%;
+		text-align:right;
+		margin-top:10px;
+	}
+	
+	NumericConfigItem .right{
+		position:absolute;
+		top:0;
+		left:35%;
+		width:65%;
+	}
+	
+	NumericConfigItem .right .btPlus{
+		position:absolute;
+		margin-top:5px;
+		margin-left:75px;
+	}
+	
+	NumericConfigItem .right .btMinus{
+		position:absolute;
+		margin-top:5px;
+		margin-left:50px;
+		
+	}
+	
+	NumericConfigItem .right .currentValue{
+		margin-top:10px;
+		position:absolute;
+		margin-left:5px;
+		cursor:pointer;
+	}
+	
+	NumericConfigItem .right CircularButton{
+		width:20px !important;
+		height:20px;
+	}
+</style>
+<NumericConfigItem>
+	<div class="left">--</div>
+	<div class="right">
+		<div class="currentValue" id="currentValue" onclick="this.NumericConfigItem.private.manualSet.call(this.NumericConfigItem);">0</div>
+		<div
+			class="btPlus"
+			SJLLoad="Shared/Components/CircularButton"
+			icon="Resources/Icons.Plus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true; this.NumericConfigItemInstance.private.plusDown.call(this.NumericConfigItemInstance); return false;" 
+			ontouchend="globalTouch = true;this.NumericConfigItemInstance.private.plusUp.call(this.NumericConfigItemInstance); return false;" 
+			onmousedown="if (globalTouch) return; this.NumericConfigItemInstance.private.plusDown.call(this.NumericConfigItemInstance); return false;" 
+			onmouseup="if (globalTouch) return; this.NumericConfigItemInstance.private.plusUp.call(this.NumericConfigItemInstance); return false;" 	
+		></div>
+		<div 
+			class="btMinus" 
+			SJLLoad="Shared/Components/CircularButton" 
+			icon="Resources/Icons.Minus.svg"
+			oncontextmenu="event.preventDefault()"
+			ontouchstart="globalTouch = true; this.NumericConfigItemInstance.private.minusDown.call(this.NumericConfigItemInstance); return false;" 
+			ontouchend="globalTouch = true;this.NumericConfigItemInstance.private.minusUp.call(this.NumericConfigItemInstance); return false;" 
+			onmousedown="if (globalTouch) return; this.NumericConfigItemInstance.private.minusDown.call(this.NumericConfigItemInstance); return false;" 
+			onmouseup="if (globalTouch) return; this.NumericConfigItemInstance.private.minusUp.call(this.NumericConfigItemInstance); return false;" 	
+		></div>
+	</div>
+</NumericConfigItem>

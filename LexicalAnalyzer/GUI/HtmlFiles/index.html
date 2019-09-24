@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="manifest" href="/manifest.json">
+		<link rel="icon"  type="image/png" href="Resources/Favicon.png">
+        <script type="text/javascript" src="Shared/GitSubmodules/SJL/SJL.js"></script>
+		<script type="text/javascript" src="Services/Dao.js"></script>
+        <script type="text/javascript">
+			//prepare a global object to contains the application states (global variables, values, services pointers, etc.)
+			AppStates = { };
+			appStates = AppStates;
+            
+			//this variable is used to prevent more of one execution of App;
+            var startUpOk = false;   
+            function App(){
+                if (startUpOk)
+                    return;
+                    
+                startUpOk = true;
+				
+                //configure and start SJL
+                SJL.start({
+					watchInterval: 250,  //changes the SJL watch interval to prevent excescive CPU usage of Raspberie (just a prevention)
+					minAnimationFrameTime:100, //like for watchInterval, determine a minimum time between animations frames to prevent CPU excecive usage
+					urlMonitor:{
+						active: true, //enable the watchin in url changes
+						activitiesLocation:"Activities", //default folder of activities
+						activityNotFoundCallback: function(){ 
+							$("content").setValue("<div style=\"width:100%; align:center; text-align:center;color:#7e7063;\">Activity not loaded"+
+								"<img style=\"margin-left:20px; margin-top:20px;\" src=\" data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDABkRExYTEBkWFBYcGxkeJT4pJSIiJUw3Oi0+WlBfXllQV1ZkcJB6ZGqIbFZXfap+iJSZoaKhYXiwva+cu5CeoZr/2wBDARscHCUhJUkpKUmaZ1dnmpqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampr/wAARCAAsADIDASIAAhEBAxEB/8QAGgAAAgMBAQAAAAAAAAAAAAAAAAUCAwQBBv/EADAQAAICAQMCBAQEBwAAAAAAAAECAxEABBIxIUEFIlFhcYGRsQYTFEIjJTJSocHw/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APLYYZdpNLLrJhFCtt9sCcWkeSIyAeQMFLXxfGT/AEDit1g318t4zEbv/L4F3SAqA3m5B9Ow/wB5ZPFqNr/m6MCYDzBmUKorkC/W8BG+ldASaPWhXW8rZCos9ulY2bRSxozakTR7hY2DoT6c3lOr0pSFGbdvKgG6q8BZhnSCCQeRhgcz0f4fZdB4bPr2QF3cRx2aB+f/AHGINPEZ5kiUgFjVngZ6dooZo4NE9rGoDkX/AELwL9yfucDjeLavcssh002nvziMXsN9CfvkPFy66+OYWVKLRY372fmcUahH8PnSaKhHMCVQm7S+GHuMZBxNCySHdYAjHJA7f4rAnodTJP4fqF10yuTe0EjdlGrneTSRIyA2ASxHt1+GXHQBSCWuv7T2zDq9VcJ2IGpjTULGArfo7cc9sMjhgNfBoBJZoWT1J7KBZ+4zfpw0jyCU7RKx3e4HQD4cfU+mUeHfw/DV2gXITZPbqOPoMZQAfoIn5sO5HYlePlgYfE9CdU8LAsQi7XejQHYV2PORhKwxOqt+WK4A3Wfjlial0BQqrU3LD174TuzRg3t6/t6YGWSdBbK0jN+0UB9e+ZHlYo5kUHcKIQAdfcjIamU7dtCjR9azLZqr6YHMMMMD/9k=\"/>"+
+								"</div>")
+						},
+						element: "Content"
+					}
+				});
+					
+				//populate the AppsStates with initial values
+				{
+					//services
+					{
+						//instanciate DAO service
+						AppStates.dao = new _DAO();
+					}
+				}
+				
+				
+				//if no activity is reported, redirects the system to the main activie (Main)
+				if (window.location.href.indexOf('#') == -1)
+                    window.location.href += "#Reports";
+					
+				document.body.ondragstart = function(e){ e.preventDefault(); };
+				window.onmousemove = function(){ document.body.style.cursor = "auto"; };
+				window.onmousedown = function(){ document.body.style.cursor = "none"; };
+            }
+        
+        </script>
+    </head>
+    <style type="text/css">
+		*{
+			/*-moz-user-select: -moz-none;
+		   -khtml-user-select: none;
+		   -webkit-user-select: none;
+
+		   -ms-user-select: none;*/
+		   user-select: none;
+		}
+	
+        Body{
+            border:0;
+            margin:0;
+        }
+        
+        Background{
+            position: fixed;
+            width:100%;
+            height:100%;
+            height:100%;
+            top:0px;
+            left:0px;
+            z-index:-1;
+            background:#AAAAFF;
+                
+        }
+        
+        Background .fixedBg{
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+			z-index:0;
+        }
+
+		Content{
+			position: absolute;
+			top: 0px;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+
+		TopBar{
+			display: none;
+
+		}      
+		
+			
+    </style>
+	<body onload="new App()">
+        <Content>
+            Loading ...
+		</Content>
+    </body>
+</html>

@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <script type="text/javascript" src="Libs.Javascript.SJL/SJL.js"></script>
+        <script type="text/javascript">
+            function start(){
+                $("body").loadHtml("TextComponent.html", function(html, sBody) {
+                    text = new TextComponent($("#textbox").elements[0]);
+                    text.setValue("Escreva algo aqui mano");
+                    text.setTitle("Alguma coisa");
+                    text.setMainColor("#EA0000");
+                });
+            }
+        </script>
+    </head>
+    <body onload="start();">
+        <div id="textbox"></div>
+    </body>
+</html>
